@@ -35,13 +35,47 @@ const client = new MongoClient(uri, {
 
      const db = client.db("Farm_db")
      const cropsCollection = db.collection("crops")
+     const usersCollection = db.collection('users')
 
-    //  GET
+
+
+    //  user data post apis
+    app.post('/users', async (req, res)=>{
+      const newUser = req.body;
+      const email = req.body.email;
+      const query = {email : email };
+      const existingUser = await usersCollection.findOne(query);
+      if(existingUser){
+        res.send({
+          message: "user already exits. do not need to insert again"
+        })
+      }
+      else{
+        const result = await usersCollection.insertOne(newUser)
+        res.send(result)
+      }
+
+    })
+
+
+  //   latest crops
+  app.get('/latestCrops', async (req,res)=>{
+    const cursor = cropsCollection.find().sort({createdAt: -1}).limit(6);
+    const result = await cursor.toArray();
+    res.send(result)
+  })
+   
+  //      
+
+
+    //  GET  allCrops
     app.get('/crops', async (req,res)=>{
       const cursor = cropsCollection.find();
       const result = await cursor.toArray();
       res.send(result);
-    })
+    }) 
+
+
 
   
     //  POST
