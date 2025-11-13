@@ -226,13 +226,51 @@ app.get('/myInterests', async (req, res) => {
     
        
     });
+
+
+    // PATCH interest status (Accept/Reject)
+    app.patch('/interests/:id', async (req, res) => {
+      const interestId = req.params.id;
+      const { cropsId, status, quantity } = req.body;
+
+      if (!["accepted", "rejected"].includes(status)) {
+        return res.status(400).send({ success: false, message: "Invalid status" });
+      }
+
+      try {
+        // Update interest status
+        const result = await cropsCollection.updateOne(
+          { _id: new ObjectId(cropsId), "interests._id": new ObjectId(interestId) },
+          { $set: { "interests.$.status": status } }
+        );
+
+        // If accepted → reduce crop quantity
+        if (status === "accepted") {
+          await cropsCollection.updateOne(
+            { _id: new ObjectId(cropsId) },
+            { $inc: { quantity: -quantity } }
+          );
+        }
+
+        if (result.modifiedCount > 0) {
+          res.send({ success: true, message: `Interest ${status} successfully` });
+        } else {
+          res.status(500).send({ success: false, message: "Failed to update interest" });
+        }
+      } catch (err) {
+        console.error(err);
+        res.status(500).send({ success: false, message: "Server error" });
+      }
+    });
+
+
    
 
 
-     await client.db('admin').command({ping : 1})
-     console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    //  await client.db('admin').command({ping : 1})
+    //  console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   }
   finally{
 
