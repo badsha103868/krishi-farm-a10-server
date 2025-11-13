@@ -92,6 +92,15 @@ const client = new MongoClient(uri, {
       res.send(result);
     });
        
+
+  //  my post page api
+  app.get('/myCrops', async (req, res)=>{
+    const email= req.query.email;
+    const query = {"owner.ownerEmail": email};
+    const result = await cropsCollection.find(query).toArray();
+    res.send(result)
+  })
+
     // crop details interset post api
     app.post('/crops/:id/interests', async (req, res)=>{
       const cropId = req.params.id;
