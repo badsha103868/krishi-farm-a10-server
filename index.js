@@ -101,6 +101,14 @@ const client = new MongoClient(uri, {
     res.send(result)
   })
 
+  // my crops delete
+  app.delete('/myCrops/:id', async(req,res)=>{
+    const id = req.params.id;
+    const query = {_id : new ObjectId(id)}
+    const result = await cropsCollection.deleteOne(query);
+    res.send(result)
+  })
+
     // crop details interset post api
     app.post('/crops/:id/interests', async (req, res)=>{
       const cropId = req.params.id;
