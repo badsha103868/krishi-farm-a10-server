@@ -83,6 +83,35 @@ const client = new MongoClient(uri, {
        res.send(result)
     })  
 
+    //    UPDATE
+    app.patch('/myCrops/:id', async (req, res)=>{
+      const id = req. params.id;
+      const updatedCrop = req.body;
+      const query= {_id: new ObjectId(id)}
+      const update = {
+         $set: {
+      name: updatedCrop.name,
+      type: updatedCrop.type,
+      pricePerUnit: updatedCrop.pricePerUnit,
+      unit: updatedCrop.unit,
+      quantity: updatedCrop.quantity,
+      description: updatedCrop.description,
+      location: updatedCrop.location,
+      image: updatedCrop.image,
+      updatedAt: new Date()
+       }
+      }
+
+      const options = {}
+      const result = await cropsCollection.updateOne(query, update, options)
+       
+   if (result.modifiedCount > 0) {
+    res.send({ success: true, message: "Crop updated successfully" });
+  } else {
+    res.status(500).send({ success: false, message: "Failed to update crop" });
+  }
+    })
+
 
   
     //  POST
