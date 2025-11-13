@@ -81,7 +81,7 @@ const client = new MongoClient(uri, {
        const query = { _id : new ObjectId(id)}
        const result = await cropsCollection.findOne(query);
        res.send(result)
-    })
+    })  
 
 
   
@@ -91,7 +91,65 @@ const client = new MongoClient(uri, {
       const result = await cropsCollection.insertOne(newCrops);
       res.send(result);
     });
+       
+    // crop details interset post api
+    app.post('/crops/:id/interests', async (req, res)=>{
+      const cropId = req.params.id;
+      const interest = req.body;
+      // crop find  kora
+
+       const query = { _id : new ObjectId(cropId)}
+      const crop = await cropsCollection.findOne(query)
+         
+      if(!crop){
+         return res.status(404).send({ message: "Crop not found" });
+      } 
+
+      // owner nija jno crop patate na para check
+      if(crop.owner.ownerEmail === interest.userEmail){
+         return res.status(400).send({ message: "Owner cannot send interest to own crop" });
+      } 
+
+      // already user interest patiya se kina check
+      const alreadyInterested = crop.interests?.find(user=> user.userEmail === interest.userEmail);
+
+      if(alreadyInterested){
+         return res.status(400).send({ message: "You have already sent an interest for this crop" });
+      }
+
+
+      //  interest ar unique id create kora
+      const interestId = new ObjectId()
+      // new object 
+      const newInterest = {
+        _id: interestId,
+        cropId: cropId,
+        userEmail: interest.userEmail,
+        userName: interest.userName,
+        quantity: interest.quantity,
+        message: interest.message,
+        status:"pending",
+      
+      }
+       
+      // interest array te push
+      const result = await cropsCollection.updateOne(
+         {_id: new ObjectId(cropId)},
+         {$push: {interests: newInterest}}
+      );
+
+      if(result.modifiedCount > 0){
+        res.send({success: true,
+            message: "Interest submitted successfully!",
+          interest: newInterest});
+      }
+       else {
+      res.status(500).send({ success: false, message: "Failed to add interest" });
+    }  
     
+       
+    });
+   
 
 
      await client.db('admin').command({ping : 1})
