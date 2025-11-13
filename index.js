@@ -65,7 +65,38 @@ const client = new MongoClient(uri, {
     res.send(result)
   })
    
-  //      
+  //       My interest
+  // My Interests API
+   
+app.get('/myInterests', async (req, res) => {
+  const email = req.query.email;
+
+  try {
+    // Find all crops where this user has sent an interest
+    const cropsWithInterest = await cropsCollection
+      .find({ "interests.userEmail": email })
+      .toArray();
+
+    // Map to only include the interest for this user
+    const userInterests = cropsWithInterest.map(crop => {
+      const interest = crop.interests.find(i => i.userEmail === email);
+      return {
+        cropId: crop._id,
+        cropName: crop.name,
+        ownerName: crop.owner.ownerName,
+        quantity: interest.quantity,
+        message: interest.message,
+        status: interest.status
+      };
+    });
+
+    res.send(userInterests);
+     } catch (err) {
+    console.error(err);
+    res.status(500).send({ success: false, message: "Failed to fetch interests" });
+  }
+});
+
 
 
     //  GET  allCrops
