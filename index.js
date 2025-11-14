@@ -37,7 +37,7 @@ const client = new MongoClient(uri, {
      const cropsCollection = db.collection("crops")
      const usersCollection = db.collection('users')
 
-
+   
 
     //  user data post apis
     app.post('/users', async (req, res)=>{
