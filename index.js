@@ -148,6 +148,26 @@ async function run() {
   });
 });
 
+// GET unique crop categories
+app.get("/cropCategories", async (req, res) => {
+  try {
+    const result = await cropsCollection
+      .aggregate([
+        { $group: { _id: "$type" } },
+        { $project: { _id: 0, type: "$_id" } }
+      ])
+      .toArray();
+
+    const categories = result.map(item => item.type);
+
+    res.send(categories);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to load categories" });
+  }
+});
+
+
 
     //  single crop find
     app.get("/crops/:id", async (req, res) => {
